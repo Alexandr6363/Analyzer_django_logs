@@ -1,5 +1,5 @@
 import pytest
-from ..parser.parser import parse_log_file
+from ..parser.parser import parse_file
 
 LOG = """\
 2025-03-27 12:38:43,000 INFO django.request: GET /api/v1/users/ 200 OK [192.168.1.98]
@@ -12,13 +12,14 @@ LOG = """\
 2025-03-27 12:45:09,000 DEBUG django.db.backends: (0.48) SELECT * FROM 'shipping' WHERE id = 17;
 """
 
-def test_parse_log_file(tmp_path):
+def test_parse_file(tmp_path):
     file_path = tmp_path / "sample.log"
     file_path.write_text(LOG, encoding='utf-8')
 
-    result = parse_log_file(str(file_path))
+    count, result = parse_file(str(file_path))
 
     assert result["/api/v1/users/"]["INFO"] == 1
     assert result["/admin/dashboard/"]["INFO"] == 1
     assert result["/api/v1/support/"]["INFO"] == 1
     assert result["/api/v1/products/"]["ERROR"] == 1
+    assert count == 4
